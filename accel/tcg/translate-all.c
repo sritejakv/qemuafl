@@ -64,6 +64,7 @@
 #include "internal.h"
 
 #include "qemuafl/common.h"
+#include "qemuafl/redqeen/rq_trace.h"
 #include "tcg/tcg-op.h"
 #include "qemuafl/imported/afl_hash.h"
 
@@ -2015,10 +2016,9 @@ TranslationBlock *afl_gen_edge(CPUState *cpu, unsigned long afl_id)
 }
 
 /* Called with mmap_lock held for user mode emulation.  */
-TranslationBlock *tb_gen_code(CPUState *cpu,
-                              target_ulong pc, target_ulong cs_base,
-                              uint32_t flags, int cflags)
-{
+TranslationBlock *tb_gen_code(CPUState *cpu, target_ulong pc,
+                              target_ulong cs_base, uint32_t flags, int cflags,
+                              unsigned char afl_fork_child) {
     CPUArchState *env = cpu->env_ptr;
     TranslationBlock *tb, *existing_tb;
     tb_page_addr_t phys_pc, phys_page2;
@@ -2091,6 +2091,14 @@ TranslationBlock *tb_gen_code(CPUState *cpu,
     tcg_ctx->cpu = env_cpu(env);
     afl_gen_trace(pc);
     gen_intermediate_code(cpu, tb, max_insns);
+    // KTS: record trace in a special new function
+    if (afl_fork_child) {
+        abi_ulong trace_loc = pc;
+        if (!afl_must_instrument(pc)) {
+            trace_loc = INIT_TRACE_IP;
+        }
+        trace_bb(trace_loc, tb->size);
+    }
     tcg_ctx->cpu = NULL;
     max_insns = tb->icount;
 

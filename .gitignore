@@ -13,3 +13,6 @@ GTAGS
 *~
 *.ast_raw
 *.depend_raw
+
+.vscode
+.cache

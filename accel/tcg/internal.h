@@ -12,8 +12,8 @@
 #include "exec/exec-all.h"
 
 TranslationBlock *tb_gen_code(CPUState *cpu, target_ulong pc,
-                              target_ulong cs_base, uint32_t flags,
-                              int cflags);
+                              target_ulong cs_base, uint32_t flags, int cflags,
+                              unsigned char afl_fork_child);
 
 void QEMU_NORETURN cpu_io_recompile(CPUState *cpu, uintptr_t retaddr);
 

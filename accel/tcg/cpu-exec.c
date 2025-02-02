@@ -989,7 +989,7 @@ static void afl_wait_tsl(CPUState *cpu, int fd) {
       if (is_valid_addr(t.tb.pc)) {
 
         mmap_lock();
-        tb = tb_gen_code(cpu, t.tb.pc, t.tb.cs_base, t.tb.flags, t.tb.cf_mask);
+        tb = tb_gen_code(cpu, t.tb.pc, t.tb.cs_base, t.tb.flags, t.tb.cf_mask, afl_fork_child);
         mmap_unlock();
 
       } else {
@@ -1239,7 +1239,7 @@ void cpu_exec_step_atomic(CPUState *cpu)
         tb = tb_lookup__cpu_state(cpu, &pc, &cs_base, &flags, cf_mask);
         if (tb == NULL) {
             mmap_lock();
-            tb = tb_gen_code(cpu, pc, cs_base, flags, cflags);
+            tb = tb_gen_code(cpu, pc, cs_base, flags, cflags, afl_fork_child);
             mmap_unlock();
         }
 
@@ -1404,7 +1404,7 @@ static inline TranslationBlock *tb_find(CPUState *cpu,
     tb = tb_lookup__cpu_state(cpu, &pc, &cs_base, &flags, cf_mask);
     if (tb == NULL) {
         mmap_lock();
-        tb = tb_gen_code(cpu, pc, cs_base, flags, cf_mask);
+        tb = tb_gen_code(cpu, pc, cs_base, flags, cf_mask, afl_fork_child);
         was_translated = true;
         mmap_unlock();
         /* We add the TB in the virtual pc hash table for the fast lookup */
